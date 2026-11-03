@@ -1,6 +1,6 @@
 from langchain_core.tools import tool
 from app.data.jobs import jobs
-
+from app.services.skill_matcher import match_skills
 """
     Tool: analyze_skills
     Input: skills (list[str])
@@ -49,30 +49,18 @@ def compare_skills(
 
     if job is None:
         return {"error": f"Job ID {job_id} not found"}
-    user_set = {
-        skill.strip().lower()
-        for skill in user_skills
-    }
-
-    required_set = {
-        skill.strip().lower()
-        for skill in job["required_skills"]
-    }
-
-    matched = sorted(user_set & required_set)
-    missing = sorted(required_set - user_set)
-
-    score = (
-        len(matched) / len(required_set) *100
-        if required_set else 0
+     
+    result = (
+        match_skills(
+            user_skills=user_skills,
+            required_skills=job["required_skills"]
+        )
     )
 
     return {
         "job_id": job_id,
         "job_title": job["title"],
-        "matched_skills": matched,
-        "missing_skills": missing,
-        "match_score": round(score, 2)
+        **result
     }
 
 @tool 

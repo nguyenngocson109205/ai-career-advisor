@@ -1,36 +1,44 @@
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
+import pymupdf
+from fastapi import UploadFile, File, HTTPException
 
-from app.agent.runner import run_agent
+from app.services.jd_analyzer import analyze_jd
 app = FastAPI(title="Mini Tool Calling Agent")
-
-
-class ChatRequest(BaseModel):
-    session_id: str = Field(min_length=1)
-    message: str = Field(min_length=1)
-
-
-class ChatResponse(BaseModel):
-    session_id: str
-    answer: str
-
-"""
-Chat with agent 
-path: /chat
+    
+""" 
+Analyze Job Description
+path: /analyze-jd
 method: post
 body{
-    message: str
-    sesstion_id: str
+    jd_text: str
+    user_skills: list[str]
 }
 """
 
-@app.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest):
-    answer = run_agent(
-        question = request.message,
-        session_id = request.session_id
+class AnalyzeJDRequest(BaseModel):
+    jd_text: str = Field(min_length=1)
+    user_skills: list[str]
+
+@app.post("/analyze-jd")
+def analyze_job_description(request: AnalyzeJDRequest):
+    return analyze_jd(
+        jd_text=request.jd_text,
+        user_skills=request.user_skills
     )
-    return ChatResponse(
-        session_id= request.session_id,
-        answer=answer
-    )
+    
+""" 
+Upload Job Description
+path: /upload-jd
+method: post
+body{
+    file: UploadFile
+}
+"""
+@app.post("/upload-jd")
+async def upload_jd(file: UploadFile = File(...)):
+    # 1. kiểm tra lại loại file 
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            
+        )

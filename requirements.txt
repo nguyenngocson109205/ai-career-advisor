@@ -1,0 +1,17 @@
+
+# LLM & Agent
+langchain-core
+langchain-openai
+
+# API
+fastapi
+uvicorn[standard]
+
+# Data validation
+pydantic
+
+# Environment variables
+python-dotenv
+
+# Testing
+pytest
